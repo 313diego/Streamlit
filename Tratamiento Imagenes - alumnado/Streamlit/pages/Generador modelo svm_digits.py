@@ -5,7 +5,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pickle
 import streamlit as st
-import time
 
 # Título de la aplicación
 st.title("Entrenamiento de un Modelo SVM para Dígitos")
@@ -57,8 +56,9 @@ if st.button("Entrenar Modelo"):
             pickle.dump(modelo, f)
         st.success("¡Modelo guardado como 'svm_digits_model.pkl'!")
 
-    # Mensaje final
+    # Mensaje final con animación de globos
     st.write("¡El entrenamiento ha finalizado con éxito!")
+    st.balloons()
 
 # Estilos CSS opcionales
 st.markdown("""
