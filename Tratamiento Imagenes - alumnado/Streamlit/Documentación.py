@@ -2,7 +2,6 @@ import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 import numpy as np
 from PIL import Image
-import cv2
 import pickle
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
