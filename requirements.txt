@@ -7,4 +7,5 @@ Pillow
 scikit_learn
 streamlit
 streamlit_drawable_canvas
+cv2
 
