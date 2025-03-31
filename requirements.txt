@@ -1,8 +1,7 @@
 matplotlib
 numpy
-opencv_contrib_python
+opencv-contrib-python
 opencv-python
-opencv_python_headless
 Pillow
 scikit_learn
 streamlit
