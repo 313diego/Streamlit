@@ -61,23 +61,33 @@ except FileNotFoundError:
 
 # Función para preprocesar la imagen
 def preprocess_image(image):
-    # # Convertir a escala de grises
-    img = Image.fromarray(image.astype('uint8')).convert('L')
-    
-    # #Redimensionar, ya que SVM fue entrenado con imagenes 8x8
-    img = img.resize((8, 8))
-    # #Necesitamos convertirla en una matriz de números, y que 
-    # # sean hexadecimales, no de 0 a 255, porque digits usa eso, por eso escalamos
-    img = np.array(img) / 16.0
-    # # Aplanar la imagen para que sea un vector de 64 elementos
-    image = img.flatten().reshape(1, -1)
+    try:
+        # Convertir a imagen de Pillow si no lo es
+        if not isinstance(image, Image.Image):
+            image = Image.fromarray(image)
 
-    # # Aplicar el mismo scaler que usaste al entrenar
-    image = scaler.transform(image)
-    
+        # Convertir a escala de grises
+        image = image.convert("L")
 
-    return image
+        # Redimensionar a 8x8 con antialiasing
+        image = image.resize((8, 8), Image.Resampling.LANCZOS)
 
+        # Convertir a array numpy y normalizar a [0, 16]
+        img_array = np.array(image, dtype=np.float32)
+        img_array = (img_array / img_array.max()) * 16  # Normalización sin alterar distribución
+
+        # Aplanar
+        flattened = img_array.flatten().reshape(1, -1)
+
+        # Mostrar valores preprocesados
+        st.write("Imagen preprocesada antes de predecir:", flattened)
+
+        return flattened  # Sin aplicar StandardScaler
+
+    except Exception as e:
+        st.error(f"Error en el preprocesamiento: {e}")
+        return None
+   
 # Función para preprocesar la imagen del lienzo
 def preprocesar_canvas_para_svm(image_data):
     """Preprocesa los datos del lienzo para el modelo SVM."""
