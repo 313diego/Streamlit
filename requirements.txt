@@ -1,11 +1,10 @@
 matplotlib
 numpy
 opencv_contrib_python
-opencv_python
+opencv-python
 opencv_python_headless
 Pillow
 scikit_learn
 streamlit
 streamlit_drawable_canvas
-cv2
 
