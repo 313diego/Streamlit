@@ -6,8 +6,8 @@ from sklearn.metrics import accuracy_score
 import pickle
 import streamlit as st
 
-# Título de la aplicación
-st.title("Entrenamiento de un Modelo SVM para Dígitos")
+# Título de la aplicación con color
+st.markdown("<h1 style='color: #1E90FF;'>Entrenamiento de un Modelo SVM para Dígitos</h1>", unsafe_allow_html=True)
 
 # Descripción
 st.write("Este programa entrena un modelo SVM para clasificar imágenes de dígitos (0-9). Presiona el botón para comenzar.")
