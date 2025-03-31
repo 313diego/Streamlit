@@ -9,244 +9,207 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import load_digits
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
-from PIL import Image
+from sklearn.metrics import accuracy_score
 
 # Configuración inicial de la página
 st.set_page_config(
-    page_title="Inicio - Predicción de Dígitos",
-    initial_sidebar_state="collapsed",
+    page_title="Clasificador de Dígitos - SVM",
+    page_icon="🔢",
+    initial_sidebar_state="expanded",
     layout="wide"
 )
 
-# Sección de documentación ajustada al formato exacto
-st.title("Modelo SVM (Support Vector Machine)")
-st.write("Las **Máquinas de Vectores de Soporte (SVM)** son modelos de aprendizaje supervisado utilizados principalmente para clasificación, aunque también pueden aplicarse a regresión.")
+# Aplicar CSS personalizado para colores e iconos
+st.markdown("""
+<style>
+    .main-header {
+        font-size: 2.5rem;
+        background: linear-gradient(90deg, #FF6F61 0%, #6B728E 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        padding: 0.5rem 0;
+        margin-bottom: 1rem;
+    }
+    .subheader {
+        font-size: 1.8rem;
+        color: #FF6F61;
+        border-bottom: 2px solid #6B728E;
+        padding-bottom: 0.3rem;
+        margin-top: 1.5rem;
+    }
+    .concept-box {
+        background-color: #FFF3E2;
+        border-left: 4px solid #FF6F61;
+        padding: 1rem;
+        border-radius: 0.3rem;
+        margin: 1rem 0;
+    }
+    .info-box {
+        background-color: #E6E6FA;
+        border: 1px solid #6B728E;
+        padding: 1rem;
+        border-radius: 0.3rem;
+        margin: 1rem 0;
+    }
+    .canvas-container {
+        background-color: #F8F9FA;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .prediction-result {
+        font-size: 1.5rem;
+        text-align: center;
+        margin: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: #D4F1F4;
+        border: 2px solid #75E6DA;
+    }
+    .button-custom {
+        background-color: #FF6F61;
+        color: white;
+        font-weight: bold;
+        border-radius: 0.3rem;
+    }
+    .success-box {
+        background-color: #D4F1F4;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        text-align: center;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-st.subheader("🧠 Idea Principal")
-st.write("El objetivo de SVM es **encontrar el mejor límite (frontera)** que separe dos clases, maximizando el espacio (margen) entre ellas.")
-st.image("https://upload.wikimedia.org/wikipedia/commons/7/72/SVM_margin.png", 
-         caption="El hiperplano separa las dos clases con el mayor margen posible.", width=400)
-
-st.subheader("🔍 Componentes Clave")
-st.write("""
-- **Hiperplano**: Es la frontera de decisión que separa las clases.  
-- **Vectores de soporte**: Son los puntos más cercanos al hiperplano. Solo estos puntos afectan directamente a la posición del hiperplano.  
-- **Margen**: Es la distancia entre el hiperplano y los vectores de soporte. SVM maximiza este margen.
-""")
-
-st.subheader("⚙️ Ventajas del modelo SVM")
-st.write("""
-- ✅ Funciona bien en espacios de alta dimensión.  
-- ✅ Eficaz cuando hay una clara separación entre clases.  
-- ✅ Usa pocos puntos de datos (vectores de soporte) → eficiente.
-""")
-
-st.subheader("🧠 ¿Cómo se aplica SVM a imágenes?")
-st.write("""
-En problemas como la clasificación de dígitos (por ejemplo, el dataset de dígitos de Scikit-learn):  
-
-- Cada imagen de 8x8 píxeles se convierte en un vector de 64 características.  
-- SVM trata de encontrar un hiperplano en ese espacio que separe dígitos diferentes (por ejemplo, 3s de 5s).  
-- Para múltiples clases (0 a 9), SVM entrena varios clasificadores binarios (uno contra uno o uno contra todos).  
-
-**Vector de 64 características:**  
-[[ 0.  0.  5. 13.  9.  1.  0.  0.]
-
-[ 0.  0. 13. 15. 10. 15.  5.  0.]
-
-[ 0.  3. 15.  2.  0. 11.  8.  0.]
-
-[ 0.  4. 12.  0.  0.  8.  8.  0.]
-
-[ 0.  5.  8.  0.  0.  9.  8.  0.]
-
-[ 0.  4. 11.  0.  1. 12.  7.  0.]
-
-[ 0.  2. 14.  5. 10. 12.  0.  0.]
-
-[ 0.  0.  6. 13. 10.  0.  0.  0.]]
-
-text
-
-Contraer
-
-Ajuste
-
-Copiar
-
-Cada número representa la intensidad del píxel, pero el rango está entre 0 y 16.
-""")
-
-st.subheader("🎯 ¿Cómo clasifica SVM varios dígitos?")
-st.write("""
-SVM, por defecto, **solo sabe distinguir entre dos clases** (por ejemplo, "¿es un 3 o no lo es?").  
-
-Pero cuando queremos clasificar **dígitos del 0 al 9**, tenemos **10 clases distintas**.  
-
-Para ello, entrena varios clasificadores.  
-SVM entrena **varios modelos pequeños** que comparan solo **dos números a la vez**. Esto se llama:  
-
----
-
-###### 1️⃣ Uno contra todos (OvR)  
-- Crea un modelo para cada número.  
-- Cada modelo aprende: **"¿Es un 3 o no lo es?"**, **"¿Es un 5 o no lo es?"**, etc.  
-- Se hacen 10 modelos (uno por cada dígito).  
-- El modelo que esté más seguro es el que da la predicción final.  
-
-###### 2️⃣ Uno contra uno (OvO)  
-- Crea un modelo por **cada par posible de números**:  
-  "¿Es un 2 o un 3?", "¿Es un 7 o un 9?", etc.  
-- En total se crean **45 modelos** para los 10 dígitos.  
-- Todos los modelos votan, y el número con más votos gana.  
-
-###### ⚙️ Scikit-learn (la librería que estamos usando) **usa por defecto la estrategia "uno contra uno"**.
-""")
-
-st.subheader("📝 Ejemplo práctico")
-st.code("""
-from sklearn.datasets import load_digits
-from sklearn.svm import SVC
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-
-# Cargar dataset
-digits = load_digits()
-X = digits.data
-y = digits.target
-
-# Escalado
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# División de datos
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2)
-
-# Entrenamiento del modelo SVM
-clf = SVC(kernel="linear")
-clf.fit(X_train, y_train)
-""", language="python")
-
-st.subheader("📊 Tipos de kernel")
-st.write("""
-SVM puede usar diferentes funciones para separar los datos:  
-
-- `linear`: Línea o plano recto.  
-- `poly`: Polinómico (curvas).  
-- `rbf`: Radial Basis Function (muy común para separaciones complejas).  
-- `sigmoid`: Similar a una red neuronal.
-""")
-
-# Cargar el modelo y el scaler desde el archivo .pkl
-@st.cache_resource
-def load_model():
-    with open("svm_digits_model.pkl", "rb") as f:
-        data = pickle.load(f)
-    return data["clf"], data["scaler"]
-
-clf, scaler = load_model()
+# Sidebar para navegación
+st.sidebar.markdown('<h1 style="color: #FF6F61; text-align: center;">🧠 SVM Toolkit</h1>', unsafe_allow_html=True)
+navigation = st.sidebar.radio(
+    "Ir a:",
+    ["🏠 Inicio", "🎨 Clasificador", "📝 Entrenar Modelo"]
+)
 
 # Función para preprocesar la imagen
 def preprocess_image(image):
     try:
-        # Convertir a imagen de Pillow si no lo es
         if not isinstance(image, Image.Image):
             image = Image.fromarray(image)
-
-        # Convertir a escala de grises
         image = image.convert("L")
-
-        # Redimensionar a 8x8 con antialiasing
         image = image.resize((8, 8), Image.Resampling.LANCZOS)
-
-        # Convertir a array numpy y normalizar a [0, 16]
         img_array = np.array(image, dtype=np.float32)
-        img_array = (img_array / img_array.max()) * 16  # Normalización sin alterar distribución
-
-        # Aplanar
+        img_array = (img_array / img_array.max()) * 16
         flattened = img_array.flatten().reshape(1, -1)
-
-        # Mostrar valores preprocesados
-        st.write("Imagen preprocesada antes de predecir:", flattened)
-
-        return flattened  # Sin aplicar StandardScaler
-
+        return flattened, img_array
     except Exception as e:
         st.error(f"Error en el preprocesamiento: {e}")
-        return None
+        return None, None
 
-# Interfaz interactiva
-st.header("🎨 Clasificador de Dígitos Manuscritos")
-st.markdown("Dibuja un número o sube una imagen para predecirlo con SVM.")
+# Cargar o entrenar modelo
+@st.cache_resource
+def load_or_train_model():
+    try:
+        with open("svm_digits_model.pkl", "rb") as f:
+            data = pickle.load(f)
+        return data["clf"], data["scaler"]
+    except:
+        digits = load_digits()
+        X = digits.data
+        y = digits.target
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+        X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+        clf = SVC(kernel="linear")
+        clf.fit(X_train, y_train)
+        return clf, scaler
 
-tab1, tab2 = st.tabs(["Dibujar", "Subir Imagen"])
+clf, scaler = load_or_train_model()
 
-with tab1:
-    st.subheader("Dibuja un número")
-    canvas_result = st_canvas(
-    fill_color="rgba(0, 0, 0, 0)",  # Fondo transparente (sin rellenar)
-    stroke_width=20,
-    stroke_color="white",  # Trazo blanco para que se vea
-    background_color="black",  # Fondo negro
-    width=200,
-    height=200,
-    drawing_mode="freedraw",
-    key="canvas",
-    )
+# Página de inicio
+if navigation == "🏠 Inicio":
+    st.markdown('<h1 class="main-header">Bienvenido al Clasificador SVM</h1>', unsafe_allow_html=True)
+    st.markdown('<div class="info-box">🔢 Usa esta app para dibujar dígitos, clasificarlos con SVM o entrenar tu propio modelo.</div>', unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.markdown("""
+        <div class="concept-box">
+        <h3>¿Qué es SVM?</h3>
+        <p>Un algoritmo que encuentra la mejor línea o plano para separar clases, maximizando el margen entre ellas.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.image("https://upload.wikimedia.org/wikipedia/commons/7/72/SVM_margin.png", caption="Hiperplano SVM", width=200)
+
+# Página del clasificador
+elif navigation == "🎨 Clasificador":
+    st.markdown('<h1 class="main-header">🎨 Clasificador de Dígitos</h1>', unsafe_allow_html=True)
+    st.markdown('<div class="concept-box">✏️ Dibuja un número o sube una imagen para clasificar.</div>', unsafe_allow_html=True)
+
+    tab1, tab2 = st.tabs(["✏️ Dibujar", "📷 Subir Imagen"])
     
-    if st.button("Predecir dibujo"):
-        if canvas_result.image_data is not None:
-            img_array = canvas_result.image_data.astype(np.uint8)
-            processed_img = preprocess_image(img_array)
+    with tab1:
+        st.markdown('<div class="canvas-container">', unsafe_allow_html=True)
+        canvas_result = st_canvas(
+            fill_color="rgba(0, 0, 0, 0)",
+            stroke_width=20,
+            stroke_color="#FFFFFF",
+            background_color="#000000",
+            width=300,
+            height=300,
+            drawing_mode="freedraw",
+            key="canvas",
+        )
+        
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            predict_btn = st.button("🔍 Predecir", key="predict", help="Clasifica tu dibujo")
+        with col_btn2:
+            if st.button("🧹 Limpiar", key="clear", help="Borra el lienzo"):
+                st.experimental_rerun()
+
+        if predict_btn and canvas_result.image_data is not None:
+            with st.spinner("🔄 Analizando..."):
+                img_array = canvas_result.image_data.astype(np.uint8)
+                processed_img, img_8x8 = preprocess_image(img_array)
+                if processed_img is not None:
+                    prediction = clf.predict(processed_img)[0]
+                    st.markdown(f'<div class="prediction-result">Predicción: <b>{prediction}</b></div>', unsafe_allow_html=True)
+                    st.image(cv2.resize(img_8x8, (100, 100), interpolation=cv2.INTER_NEAREST), caption="Imagen 8x8", width=100)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with tab2:
+        uploaded_file = st.file_uploader("📁 Sube una imagen", type=["jpg", "png", "jpeg"])
+        if uploaded_file:
+            img = Image.open(uploaded_file)
+            processed_img, img_8x8 = preprocess_image(img)
             if processed_img is not None:
                 prediction = clf.predict(processed_img)[0]
-                st.success(f"El número predicho es: **{prediction}**")
-                resized_img = cv2.resize(img_array, (8, 8), interpolation=cv2.INTER_AREA)
-                st.image(resized_img, caption="Imagen procesada (8x8)", width=100)
-        else:
-            st.warning("Por favor, dibuja algo antes de predecir.")
+                st.markdown(f'<div class="prediction-result">Predicción: <b>{prediction}</b></div>', unsafe_allow_html=True)
+                st.image(cv2.resize(img_8x8, (100, 100), interpolation=cv2.INTER_NEAREST), caption="Imagen 8x8", width=100)
 
-with tab2:
-    st.subheader("Sube una imagen")
-    uploaded_file = st.file_uploader("Carga una imagen (JPG, PNG)", type=["jpg", "png"])
-    if uploaded_file is not None:
-        img = Image.open(uploaded_file)
-        img_array = np.array(img)
-        processed_img = preprocess_image(img_array)
-        if processed_img is not None:
-            prediction = clf.predict(processed_img)[0]
-            st.success(f"El número predicho es: **{prediction}**")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.image(img, caption="Imagen original", width=200)
-            with col2:
-                resized_img = cv2.resize(img_array, (8, 8), interpolation=cv2.INTER_AREA)
-                st.image(resized_img, caption="Imagen procesada (8x8)", width=100)
-    else:
-        st.info("Sube una imagen para predecir.")
+# Página de entrenamiento
+elif navigation == "📝 Entrenar Modelo":
+    st.markdown('<h1 class="main-header">📝 Entrenar Modelo SVM</h1>', unsafe_allow_html=True)
+    st.markdown('<div class="concept-box">🚀 Entrena un modelo SVM para clasificar dígitos.</div>', unsafe_allow_html=True)
 
-# Ejemplo práctico interactivo
-st.header("📝 Ejemplo práctico: Entrenamiento del modelo")
-st.markdown("Aquí puedes ver cómo se entrenó el modelo SVM con el dataset de dígitos de Scikit-learn.")
-if st.button("Ejecutar entrenamiento y mostrar resultados"):
-    digits = load_digits()
-    X = digits.data
-    y = digits.target
-    scaler_example = StandardScaler()
-    X_scaled = scaler_example.fit_transform(X)
-    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
-    clf_example = SVC(kernel="linear")
-    clf_example.fit(X_train, y_train)
-    accuracy = clf_example.score(X_test, y_test)
-    st.success(f"Precisión del modelo entrenado: **{accuracy:.2%}**")
-    st.subheader("Ejemplos del dataset")
-    fig, axes = plt.subplots(2, 5, figsize=(10, 4))
-    for i, ax in enumerate(axes.flat):
-        ax.imshow(digits.images[i], cmap="gray")
-        ax.set_title(f"Dígito: {digits.target[i]}")
-        ax.axis("off")
-    st.pyplot(fig)
-
-# Pie de página
-st.markdown("---")
-st.write("Hecho con ❤️ por Diego para la actividad de SVM.")
+    if st.button("🚀 Entrenar", key="train_btn", help="Inicia el entrenamiento"):
+        with st.spinner("⏳ Preparando datos..."):
+            digits = load_digits()
+            X = digits.data
+            y = digits.target
+            scaler = StandardScaler()
+            X_scaled = scaler.fit_transform(X)
+            X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+        
+        with st.spinner("🔧 Entrenando modelo..."):
+            clf = SVC(kernel="linear")
+            clf.fit(X_train, y_train)
+        
+        with st.spinner("📊 Evaluando..."):
+            y_pred = clf.predict(X_test)
+            accuracy = accuracy_score(y_test, y_pred)
+        
+        with open("svm_digits_model.pkl", "wb") as f:
+            pickle.dump({"clf": clf, "scaler": scaler}, f)
+        
+        st.markdown(f'<div class="success-box">✅ Modelo entrenado con precisión: <b>{accuracy:.2f}</b></div>', unsafe_allow_html=True)
+        st.balloons()
