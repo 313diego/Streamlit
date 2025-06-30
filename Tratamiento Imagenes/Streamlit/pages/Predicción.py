@@ -80,7 +80,7 @@ def preprocess_image(image):
         flattened = img_array.flatten().reshape(1, -1)
 
         # Mostrar valores preprocesados
-        st.write("Imagen preprocesada antes de predecir:", flattened)
+        #st.write("Imagen preprocesada antes de predecir:", flattened)
 
         return flattened  # Sin aplicar StandardScaler
 
@@ -169,7 +169,10 @@ with tab1[0]:
     prediction = clf.predict(sample)
     st.write(f"Valor real: **{true_label}**")
     st.write(f"Predicción: **{prediction}**")
-    st.image(digits.images[sample_idx], caption="Imagen del dataset (8x8)", width=100)
+    
+    # Normalizar la imagen al rango [0.0, 1.0]
+    normalized_image = digits.images[sample_idx] / 16.0  # Normaliza dividiendo por el máximo (16)
+    st.image(normalized_image, caption="Imagen del dataset (8x8)", width=100)
 
 # Pie de página
 st.markdown("<div class='section-title'>Notas</div>", unsafe_allow_html=True)

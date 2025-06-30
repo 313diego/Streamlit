@@ -66,14 +66,6 @@ En problemas como la clasificación de dígitos (por ejemplo, el dataset de díg
 
 [ 0.  0.  6. 13. 10.  0.  0.  0.]]
 
-text
-
-Contraer
-
-Ajuste
-
-Copiar
-
 Cada número representa la intensidad del píxel, pero el rango está entre 0 y 16.
 """)
 
@@ -167,7 +159,7 @@ def preprocess_image(image):
         flattened = img_array.flatten().reshape(1, -1)
 
         # Mostrar valores preprocesados
-        st.write("Imagen preprocesada antes de predecir:", flattened)
+        #st.write("Imagen preprocesada antes de predecir:", flattened)
 
         return flattened  # Sin aplicar StandardScaler
 
