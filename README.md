@@ -25,4 +25,4 @@ La aplicación está desplegada en [Streamlit Community Cloud](https://tratamien
 
 ## Enlaces
 - [Aplicación en vivo](https://tratamientoimagenesdiego.streamlit.app)
-- [Código en GitHub](https://github.com/313diego/TratamientoImagenes)
+- [Código en GitHub](https://github.com/313diego/Streamlit_Tratamiento_Imagenes)
