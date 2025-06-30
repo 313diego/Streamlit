@@ -249,4 +249,4 @@ if st.button("Ejecutar entrenamiento y mostrar resultados"):
 
 # Pie de página
 st.markdown("---")
-st.write("Hecho con ❤️ por Diego para la actividad de SVM.")
+st.write("Hecho con ❤️ por Diego.")
